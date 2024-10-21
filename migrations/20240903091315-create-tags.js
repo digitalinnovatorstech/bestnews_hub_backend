@@ -13,41 +13,42 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      // description: {
-      //   type: Sequelize.STRING,
-      //   allowNull: true,
-      // },
-      // status: {
-      //   type: Sequelize.ENUM("PUBLISHED", "DRAFT", "PENDING"),
-      //   defaultValue: "PENDING",
-      // },
-      // permalink: {
-      //   type: Sequelize.TEXT,
-      //   allowNull: true,
-      // },
-      // isIndex: {
-      //   type: Sequelize.BOOLEAN,
-      //   defaultValue: false,
-      //   allowNull: false,
-      // },
-      // metaTitle: {
-      //   type: Sequelize.STRING,
-      //   allowNull: true,
-      // },
-      // metaDescription: {
-      //   type: Sequelize.STRING,
-      //   allowNull: true,
-      // },
-      // _categories: {
-      //   type: Sequelize.INTEGER,
-      //   allowNull: true,
-      //   references: {
-      //     model: "categories",
-      //     key: "id",
-      //   },
-      //   onUpdate: "CASCADE",
-      //   onDelete: "SET NULL",
-      // },
+      description: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      status: {
+        type: Sequelize.ENUM("PUBLISHED", "DRAFT", "PENDING"),
+        defaultValue: "PENDING",
+        allowNull: true,
+      },
+      permalink: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+      isIndex: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+        allowNull: true,
+      },
+      metaTitle: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      metaDescription: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      _categories: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: "categories",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL",
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

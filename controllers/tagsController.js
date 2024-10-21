@@ -33,37 +33,32 @@ const getAllTags = async (req, res) => {
   try {
     const { status, _categories } = req.query;
     const whereClause = {
-      raw: true,
       include: [
         {
           model: databases.posts,
-          attributes: [], // Exclude post attributes as you want just the count
+          attributes: ["id"],
           through: { attributes: [] }, // Exclude the join table attributes
         },
       ],
-      group: ["tags.id"], // Group by tag ID to count posts for each tag
-      attributes: {
-        include: [
-          [
-            databases.sequelize.fn(
-              "COUNT",
-              databases.sequelize.col("posts.id")
-            ),
-            "postCount",
-          ],
-        ],
-      },
-      group: ["tags.id"], // Group by tag ID
     };
+
+    // Add status and category filters if provided
     if (status) {
       whereClause.where = { status: status };
     }
     if (_categories) {
       whereClause.where = { _categories: _categories };
     }
-    const tags = await databases.tags.findAll(whereClause);
 
-    if (tags) {
+    let tags = await databases.tags.findAll(whereClause);
+
+    // Map over tags to add the total post count for each tag
+    tags = tags.map((tag) => ({
+      ...tag.toJSON(), // Convert Sequelize instance to plain object
+      totalPost: tag.posts.length, // Add totalPost property
+    }));
+
+    if (tags.length > 0) {
       return res.status(200).json({
         success: true,
         data: tags,
@@ -77,7 +72,7 @@ const getAllTags = async (req, res) => {
     console.log(error);
     return res.status(501).json({
       success: false,
-      message: `Internal Server Error `,
+      message: `Internal Server Error`,
     });
   }
 };

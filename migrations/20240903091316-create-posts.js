@@ -17,7 +17,7 @@ module.exports = {
         allowNull: false,
       },
       description: {
-        type: DataTypes.TEXT,
+        type: Sequelize.TEXT,
         allowNull: true,
       },
       status: {
@@ -51,7 +51,7 @@ module.exports = {
         allowNull: false,
       },
       SEOImageUrl: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: true,
       },
       publishedAt: {

@@ -10,6 +10,42 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM("PUBLISHED", "DRAFT", "PENDING"),
+      defaultValue: "PENDING",
+      allowNull: true,
+    },
+    permalink: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    isIndex: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: true,
+    },
+    metaTitle: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    metaDescription: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    _categories: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "categories",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
+    },
   });
 
   Tags.associate = (models) => {

@@ -11,8 +11,8 @@ const sequelize = new Sequelize(database, username, password, {
   pool: {
     max: 1,
     min: 0,
-    acquire: 10000,
-    idle: 10000,
+    acquire: 100000,
+    idle: 100000,
   },
   dialectOptions: {
     connectTimeout: 30000, // Adjust the timeout as needed (in milliseconds)
