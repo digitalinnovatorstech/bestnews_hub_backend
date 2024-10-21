@@ -1,0 +1,12 @@
+{
+  "development": {
+    "username": "DBadmin",
+    "password": "DBadmin123",
+    "database": "blog_testing",
+    "host": "mysqldb-1.cfuy4ia28h3x.ap-south-1.rds.amazonaws.com",
+    "dialect": "mysql",
+    "port": "3306",
+    "charset": "utf8mb4",
+    "collate": "utf8mb4_unicode_ci"
+  }
+}
