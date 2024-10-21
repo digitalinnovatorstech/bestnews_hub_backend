@@ -34,7 +34,26 @@ const getAllTags = async (req, res) => {
     const { status, _categories } = req.query;
     const whereClause = {
       raw: true,
-      attributes: { exclude: ["updatedAt"] },
+      include: [
+        {
+          model: databases.posts,
+          attributes: [], // Exclude post attributes as you want just the count
+          through: { attributes: [] }, // Exclude the join table attributes
+        },
+      ],
+      group: ["tags.id"], // Group by tag ID to count posts for each tag
+      attributes: {
+        include: [
+          [
+            databases.sequelize.fn(
+              "COUNT",
+              databases.sequelize.col("posts.id")
+            ),
+            "postCount",
+          ],
+        ],
+      },
+      group: ["tags.id"], // Group by tag ID
     };
     if (status) {
       whereClause.where = { status: status };
@@ -43,6 +62,7 @@ const getAllTags = async (req, res) => {
       whereClause.where = { _categories: _categories };
     }
     const tags = await databases.tags.findAll(whereClause);
+
     if (tags) {
       return res.status(200).json({
         success: true,
