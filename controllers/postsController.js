@@ -88,7 +88,8 @@ const createPost = async (req, res) => {
 /*-------------------------- get All Posts -----------------------------*/
 const getPosts = async (req, res) => {
   try {
-    const { tag, tagIds, category, categoryIds, status, thisMonth } = req.query;
+    const { tag, tagIds, category, categoryIds, status, thisMonth, latest } =
+      req.query;
 
     const queryOptions = {
       include: [
@@ -100,6 +101,10 @@ const getPosts = async (req, res) => {
       // raw: true,
     };
 
+    if (latest) {
+      queryOptions.order = [["createdAt", "DESC"]];
+      queryOptions.limit = 5;
+    }
     if (tagIds) {
       const tagsArray = Array.isArray(tagIds) ? tagIds : [tagIds];
       queryOptions.include[0].where = {
@@ -190,9 +195,10 @@ const getPosts = async (req, res) => {
 const getPostById = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id);
+
     const post = await databases.posts.findByPk(id, {
       include: [databases.tags, databases.categories],
-      raw: true,
     });
 
     if (!post) {
@@ -201,6 +207,7 @@ const getPostById = async (req, res) => {
         message: "Post not found",
       });
     }
+
     post.totalcomments = await databases.comments.count({
       where: { _post: post.id },
     });
@@ -220,7 +227,7 @@ const getPostById = async (req, res) => {
       data: post,
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({
       success: false,
       message: error.message,
