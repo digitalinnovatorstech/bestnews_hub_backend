@@ -1,4 +1,6 @@
+const { Op } = require("sequelize");
 const databases = require("../config/database/databases");
+const moment = require("moment");
 const { excelToJsonHandler } = require("../utils/excelUtils");
 
 /*-------------------------- Create Post -----------------------------*/
@@ -86,7 +88,7 @@ const createPost = async (req, res) => {
 /*-------------------------- get All Posts -----------------------------*/
 const getPosts = async (req, res) => {
   try {
-    const { tagIds, categoryIds, status } = req.query;
+    const { tag, tagIds, category, categoryIds, status, thisMonth } = req.query;
 
     const queryOptions = {
       include: [
@@ -95,13 +97,25 @@ const getPosts = async (req, res) => {
       ],
       order: [["createdAt", "DESC"]],
       where: {},
-      raw: true,
+      // raw: true,
     };
+
     if (tagIds) {
       const tagsArray = Array.isArray(tagIds) ? tagIds : [tagIds];
       queryOptions.include[0].where = {
         id: tagsArray,
       };
+    }
+    if (tag) {
+      let tagRecord = await databases.tags.findOne({
+        where: { name: { [Op.like]: tag } },
+      });
+      if (tagRecord) {
+        const tagId = tagRecord.id;
+        queryOptions.include[0].where = {
+          id: tagId,
+        };
+      }
     }
     if (categoryIds) {
       const categoriesArray = Array.isArray(categoryIds)
@@ -111,9 +125,34 @@ const getPosts = async (req, res) => {
         id: categoriesArray,
       };
     }
+    if (category) {
+      let categoryRecord = await databases.categories.findOne({
+        where: { name: { [Op.like]: `%${category}%` } },
+      });
+
+      if (categoryRecord) {
+        const categoryId = categoryRecord.id;
+        // Ensure the filter is applied to the correct include for categories
+        if (!queryOptions.include[1]) {
+          queryOptions.include[1] = {};
+        }
+        queryOptions.include[1].where = { id: categoryId }; // Apply filter to categories
+      }
+    }
+
     if (status) {
       queryOptions.where.status = status.toUpperCase();
     }
+
+    if (thisMonth) {
+      const startOfMonth = moment().startOf("month").toDate();
+      const endOfMonth = moment().endOf("month").toDate();
+
+      queryOptions.where.createdAt = {
+        [Op.between]: [startOfMonth, endOfMonth],
+      };
+    }
+    console.log(queryOptions);
 
     const posts = await databases.posts.findAll(queryOptions);
     if (posts) {
