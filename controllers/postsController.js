@@ -152,7 +152,6 @@ const getPosts = async (req, res) => {
         [Op.between]: [startOfMonth, endOfMonth],
       };
     }
-    console.log(queryOptions);
 
     const posts = await databases.posts.findAll(queryOptions);
     if (posts) {
