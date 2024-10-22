@@ -195,7 +195,6 @@ const getPosts = async (req, res) => {
 const getPostById = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
 
     const post = await databases.posts.findByPk(id, {
       include: [databases.tags, databases.categories],
