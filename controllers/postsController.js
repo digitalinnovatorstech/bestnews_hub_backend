@@ -9,6 +9,7 @@ const createPost = async (req, res) => {
   try {
     let {
       title,
+      description,
       content,
       status,
       metaTitle,
@@ -31,6 +32,7 @@ const createPost = async (req, res) => {
     // Create the post
     const createdPost = await databases.posts.create({
       title,
+      description,
       content,
       status,
       metaTitle,
@@ -164,10 +166,12 @@ const getPosts = async (req, res) => {
       };
     }
 
-    const posts = await databases.posts.findAll(queryOptions);
+    let posts = await databases.posts.findAll(queryOptions);
+
     if (posts) {
       for (let i = 0; i < posts.length; i++) {
         const post = posts[i];
+        post.SEOImageUrl = post.SEOImageUrl.split(",");
         post.totalcomments = await databases.comments.count({
           where: { _post: post.id },
         });
@@ -183,6 +187,7 @@ const getPosts = async (req, res) => {
           raw: true,
         });
       }
+
       return res.status(200).json({
         success: true,
         data: posts,
@@ -198,54 +203,120 @@ const getPosts = async (req, res) => {
 };
 
 /*-------------------------- get Post By Id -----------------------------*/
+// const getPostById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     let post = await databases.posts.findByPk(id, {
+//       include: [databases.tags, databases.categories],
+//     });
+
+//     if (!post) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Post not found",
+//       });
+//     }
+//     // let postData = await databases.posts.findByPk(id, { raw: true });
+//     post.SEOImageUrl = post.SEOImageUrl.split(",");
+
+//     post.totalcomments = await databases.comments.count({
+//       where: { _post: post.id },
+//     });
+//     post.comments = await databases.comments.findAll({
+//       attributes: { exclude: ["updatedAt"] },
+//       order: [["createdAt", "DESC"]],
+//       where: { _post: post.id },
+//     });
+//     post.faq = await databases.faq.findAll({
+//       attributes: { exclude: ["updatedAt"] },
+//       order: [["createdAt", "DESC"]],
+//       where: { _post: post.id },
+//       raw: true,
+//     });
+//     return res.status(200).json({
+//       success: true,
+//       data: post,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
 const getPostById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const post = await databases.posts.findByPk(id, {
-      include: [databases.tags, databases.categories],
-    });
-
-    if (!post) {
-      return res.status(404).json({
+    if (!id) {
+      return res.status(400).json({
         success: false,
-        message: "Post not found",
+        message: "Post ID is required.",
       });
     }
 
-    post.totalcomments = await databases.comments.count({
-      where: { _post: post.id },
-    });
-    post.comments = await databases.comments.findAll({
-      attributes: { exclude: ["updatedAt"] },
-      order: [["createdAt", "DESC"]],
-      where: { _post: post.id },
-    });
-    post.faq = await databases.faq.findAll({
-      attributes: { exclude: ["updatedAt"] },
-      order: [["createdAt", "DESC"]],
-      where: { _post: post.id },
-      raw: true,
-    });
-    return res.status(200).json({
-      success: true,
-      data: post,
-    });
+    const queryOptions = {
+      include: [
+        { model: databases.tags, through: { attributes: [] } },
+        { model: databases.categories, through: { attributes: [] } },
+      ],
+      where: {
+        id: id,
+      },
+    };
+
+    let post = await databases.posts.findOne(queryOptions);
+
+    if (post) {
+      post.SEOImageUrl = post.SEOImageUrl ? post.SEOImageUrl.split(",") : [];
+
+      let totalcomments = await databases.comments.count({
+        where: { _post: post.id },
+        raw: true,
+      });
+
+      let comments = await databases.comments.findAll({
+        attributes: { exclude: ["updatedAt"] },
+        order: [["createdAt", "DESC"]],
+        where: { _post: post.id },
+        raw: true, // Fetch raw data
+      });
+
+      let faq = await databases.faq.findAll({
+        attributes: { exclude: ["updatedAt"] },
+        order: [["createdAt", "DESC"]],
+        where: { _post: post.id },
+        raw: true, // Fetch raw data
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: { post, comments, faq, totalcomments },
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found.",
+      });
+    }
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error(error);
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
-
 /*-------------------------- Update Post by ID -----------------------------*/
 const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
     const {
       title,
+      description,
       content,
       status,
       metaTitle,
@@ -271,6 +342,7 @@ const updatePost = async (req, res) => {
     // Update post fields
     await post.update({
       title,
+      description,
       content,
       status,
       metaTitle,
