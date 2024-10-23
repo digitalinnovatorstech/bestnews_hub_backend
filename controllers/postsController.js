@@ -7,7 +7,7 @@ const { excelToJsonHandler } = require("../utils/excelUtils");
 
 const createPost = async (req, res) => {
   try {
-    const {
+    let {
       title,
       content,
       status,
@@ -21,7 +21,12 @@ const createPost = async (req, res) => {
       tagIds,
       categoryIds,
       faq,
+      publishedAt,
     } = req.body;
+
+    if (isPublished) {
+      publishedAt = new Date();
+    }
 
     // Create the post
     const createdPost = await databases.posts.create({
@@ -35,6 +40,7 @@ const createPost = async (req, res) => {
       isIndex,
       layout,
       SEOImageUrl,
+      publishedAt,
     });
 
     if (tagIds && tagIds.length > 0) {
