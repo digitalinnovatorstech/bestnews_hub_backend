@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 const databases = require("../config/database/databases");
 
 /*-------------- Create a new category----------*/
@@ -255,6 +255,50 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+/* --------------- Get all Popular Category categories for --------------- */
+
+const getPopularCategoriesList = async (req, res) => {
+  try {
+    const categories = await databases.categories.findAll({
+      attributes: ["id", "name", [fn("COUNT", col("posts.id")), "postCount"]],
+      include: [
+        {
+          model: databases.posts,
+          through: {
+            attributes: [],
+          },
+          required: false,
+        },
+      ],
+      group: ["categories.id"],
+      order: [[fn("COUNT", col("posts.id")), "DESC"]],
+      // limit: 10, // Limit to top 10 categories
+    });
+
+    const result = categories.slice(0, 10).map((category) => ({
+      categoryId: category.id,
+      name: category.name,
+      postCount: category.dataValues.postCount,
+    }));
+
+    const totalPosts = result.reduce(
+      (acc, category) => acc + category.postCount,
+      0
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: { categories: result, totalPosts },
+    });
+  } catch (error) {
+    console.error("Error fetching popular categories:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createCategory,
   getAllCategoriesList,
@@ -262,4 +306,5 @@ module.exports = {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  getPopularCategoriesList,
 };

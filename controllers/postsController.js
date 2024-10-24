@@ -171,7 +171,7 @@ const getPosts = async (req, res) => {
     if (posts) {
       for (let i = 0; i < posts.length; i++) {
         const post = posts[i];
-        post.SEOImageUrl = post.SEOImageUrl.split(",");
+        // post.SEOImageUrl = post.SEOImageUrl.split(",");
         post.totalcomments = await databases.comments.count({
           where: { _post: post.id },
         });

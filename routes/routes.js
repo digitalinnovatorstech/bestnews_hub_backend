@@ -7,6 +7,7 @@ const {
   updateCategory,
   deleteCategory,
   getAllCategoriesList,
+  getPopularCategoriesList,
 } = require("../controllers/categoryController");
 const {
   createTag,
@@ -52,6 +53,7 @@ router.post("/admin/login/user", loginUser);
 router.post("/admin/category/create", createCategory);
 router.get("/admin/category/getAll", getAllCategories);
 router.get("/admin/allCategory/list", getAllCategoriesList);
+router.get("/admin/category/popular", getPopularCategoriesList);
 router.get("/admin/category/getById/:id", getCategoryById);
 router.put("/admin/category/update/:id", updateCategory);
 router.delete("/admin/category/delete/:id", deleteCategory);
